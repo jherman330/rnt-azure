@@ -32,8 +32,24 @@ jobs:
       - name: Install azd
         uses: Azure/setup-azd@v2
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: ./src/api
+
+      - name: Build
+        run: dotnet build --no-restore
+        working-directory: ./src/api
+
+      # Azure provisioning and deployment steps disabled on normal pushes
+      # These steps will only run on manual workflow_dispatch triggers
+      # To enable: trigger workflow manually or set ENABLE_AZURE_DEPLOYMENT=true
       - name: Log in with Azure (Federated Credentials)
-        if: ${{ env.AZURE_CLIENT_ID != '' }}
+        if: ${{ (github.event_name == 'workflow_dispatch' || env.ENABLE_AZURE_DEPLOYMENT == 'true') && env.AZURE_CLIENT_ID != '' }}
         run: |
           azd auth login `
             --client-id "$Env:AZURE_CLIENT_ID" `
@@ -42,7 +58,7 @@ jobs:
         shell: pwsh
 
       - name: Log in with Azure (Client Credentials)
-        if: ${{ env.AZURE_CREDENTIALS != '' }}
+        if: ${{ (github.event_name == 'workflow_dispatch' || env.ENABLE_AZURE_DEPLOYMENT == 'true') && env.AZURE_CREDENTIALS != '' }}
         run: |
           $info = $Env:AZURE_CREDENTIALS | ConvertFrom-Json -AsHashtable;
           Write-Host "::add-mask::$($info.clientSecret)"
@@ -56,9 +72,11 @@ jobs:
           AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Provision Infrastructure
+        if: ${{ github.event_name == 'workflow_dispatch' || env.ENABLE_AZURE_DEPLOYMENT == 'true' }}
         run: azd provision --no-prompt
         env:
           AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
 
       - name: Deploy Application
+        if: ${{ github.event_name == 'workflow_dispatch' || env.ENABLE_AZURE_DEPLOYMENT == 'true' }}
         run: azd deploy --no-prompt
