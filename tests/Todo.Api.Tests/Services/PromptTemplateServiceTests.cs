@@ -16,6 +16,7 @@ public class PromptTemplateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetPromptTemplateAsync_StoryRootMerge_ReturnsValidTemplate()
     {
         // Act
@@ -29,6 +30,7 @@ public class PromptTemplateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetPromptTemplateAsync_StoryRootMerge_DefaultVersion_ReturnsValidTemplate()
     {
         // Act
@@ -40,6 +42,7 @@ public class PromptTemplateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetPromptTemplateAsync_WorldStateMerge_ReturnsValidTemplate()
     {
         // Act
@@ -53,6 +56,7 @@ public class PromptTemplateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetPromptTemplateAsync_WorldStateMerge_DefaultVersion_ReturnsValidTemplate()
     {
         // Act
@@ -64,6 +68,7 @@ public class PromptTemplateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetPromptTemplateAsync_UnknownTemplateName_ThrowsArgumentException()
     {
         // Act & Assert
@@ -72,6 +77,7 @@ public class PromptTemplateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetPromptTemplateAsync_UnknownVersion_ThrowsArgumentException()
     {
         // Act & Assert
@@ -80,6 +86,7 @@ public class PromptTemplateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetPromptTemplateAsync_CaseInsensitiveTemplateName_Works()
     {
         // Act

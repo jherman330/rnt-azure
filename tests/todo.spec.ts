@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { v4 as uuidv4 } from "uuid";
 
-test("Create and delete item test", async ({ page }) => {
+test("Create and delete item test", { tag: "@FullCI" }, async ({ page }) => {
   await page.goto("/", { waitUntil: 'networkidle' });
 
   await expect(page.locator("text=My List").first()).toBeVisible();

@@ -45,6 +45,27 @@ jobs:
         run: dotnet build --no-restore
         working-directory: ./src/api
 
+      - name: Run C# Tests
+        run: dotnet test --no-build
+        working-directory: ./tests/Todo.Api.Tests
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Playwright dependencies
+        run: npm ci
+        working-directory: ./tests
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+        working-directory: ./tests
+
+      - name: Run Playwright E2E Tests
+        run: npx playwright test
+        working-directory: ./tests
+
       # Azure provisioning and deployment steps disabled on normal pushes
       # These steps will only run on manual workflow_dispatch triggers
       # To enable: trigger workflow manually or set ENABLE_AZURE_DEPLOYMENT=true

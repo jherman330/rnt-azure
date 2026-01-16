@@ -47,6 +47,7 @@ public class WorldStateServiceTests
     #region GetCurrentWorldStateAsync Tests
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetCurrentWorldStateAsync_ReturnsCurrentVersion()
     {
         // Arrange
@@ -73,6 +74,7 @@ public class WorldStateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetCurrentWorldStateAsync_NoCurrentVersion_ReturnsNull()
     {
         // Arrange
@@ -92,6 +94,7 @@ public class WorldStateServiceTests
     #region GetWorldStateVersionAsync Tests
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetWorldStateVersionAsync_ValidVersionId_ReturnsVersion()
     {
         // Arrange
@@ -119,6 +122,7 @@ public class WorldStateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetWorldStateVersionAsync_EmptyVersionId_ThrowsArgumentException()
     {
         // Act & Assert
@@ -127,6 +131,7 @@ public class WorldStateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetWorldStateVersionAsync_NullVersionId_ThrowsArgumentException()
     {
         // Act & Assert
@@ -139,6 +144,7 @@ public class WorldStateServiceTests
     #region ListWorldStateVersionsAsync Tests
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ListWorldStateVersionsAsync_ReturnsVersionList()
     {
         // Arrange
@@ -166,6 +172,7 @@ public class WorldStateServiceTests
     #region ProposeWorldStateMergeAsync Tests - LLM Response Parsing (Mandatory Coverage)
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeWorldStateMergeAsync_ValidLLMResponse_ParsesSuccessfully()
     {
         // Arrange
@@ -185,6 +192,7 @@ public class WorldStateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeWorldStateMergeAsync_WithCurrentWorldState_IncludesInPrompt()
     {
         // Arrange
@@ -214,6 +222,7 @@ public class WorldStateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeWorldStateMergeAsync_NoCurrentWorldState_UsesNullInPrompt()
     {
         // Arrange
@@ -235,6 +244,7 @@ public class WorldStateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeWorldStateMergeAsync_MalformedJson_ThrowsInvalidOperationException()
     {
         // Arrange
@@ -250,6 +260,7 @@ public class WorldStateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeWorldStateMergeAsync_EmptyResponse_ThrowsInvalidOperationException()
     {
         // Arrange
@@ -265,6 +276,7 @@ public class WorldStateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeWorldStateMergeAsync_NullResponse_ThrowsInvalidOperationException()
     {
         // Arrange
@@ -280,7 +292,8 @@ public class WorldStateServiceTests
     }
 
     [Fact]
-    public async Task ProposeWorldStateMergeAsync_DeserializesToNull_ThrowsInvalidOperationException()
+    [Trait("Category", "FastLocal")]
+    public async Task ProposeWorldStateMergeAsync_EmptyJsonObject_FailsValidation()
     {
         // Arrange
         var rawInput = "Some input";
@@ -289,12 +302,15 @@ public class WorldStateServiceTests
             .ReturnsAsync("{}");
 
         // Act & Assert
+        // Empty JSON object deserializes to object with default values, which fails validation
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _service.ProposeWorldStateMergeAsync(rawInput));
-        Assert.Contains("deserialized to null", ex.Message);
+        Assert.Contains("Proposal validation failed", ex.Message);
+        Assert.Contains("WorldStateId is required", ex.Message);
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeWorldStateMergeAsync_LLMServiceThrows_PropagatesException()
     {
         // Arrange
@@ -314,6 +330,7 @@ public class WorldStateServiceTests
     #region ProposeWorldStateMergeAsync Tests - Schema Validation (Mandatory Coverage)
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeWorldStateMergeAsync_MissingRequiredField_ThrowsInvalidOperationException()
     {
         // Arrange
@@ -330,6 +347,7 @@ public class WorldStateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeWorldStateMergeAsync_ExtraFields_StillValidates()
     {
         // Arrange
@@ -347,6 +365,7 @@ public class WorldStateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeWorldStateMergeAsync_EmptyInput_ThrowsArgumentException()
     {
         // Act & Assert
@@ -355,6 +374,7 @@ public class WorldStateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeWorldStateMergeAsync_NullInput_ThrowsArgumentException()
     {
         // Act & Assert
@@ -367,6 +387,7 @@ public class WorldStateServiceTests
     #region CommitWorldStateVersionAsync Tests - Persistence and Provenance (Mandatory Coverage)
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task CommitWorldStateVersionAsync_ValidProposal_CreatesVersionWithProvenance()
     {
         // Arrange
@@ -407,6 +428,7 @@ public class WorldStateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task CommitWorldStateVersionAsync_NoPriorVersion_SetsPriorVersionIdToNull()
     {
         // Arrange
@@ -445,6 +467,7 @@ public class WorldStateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task CommitWorldStateVersionAsync_InvalidProposal_ThrowsArgumentException()
     {
         // Arrange
@@ -467,6 +490,7 @@ public class WorldStateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task CommitWorldStateVersionAsync_NullProposal_ThrowsArgumentNullException()
     {
         // Act & Assert
@@ -475,6 +499,7 @@ public class WorldStateServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task CommitWorldStateVersionAsync_SetsLlmAssistedFlagToTrue()
     {
         // Arrange
@@ -516,6 +541,7 @@ public class WorldStateServiceTests
     #region Error Handling and Fallback Tests (Mandatory Coverage)
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeWorldStateMergeAsync_InvalidJsonStructure_ThrowsWithContext()
     {
         // Arrange

@@ -47,6 +47,7 @@ public class StoryRootServiceTests
     #region GetCurrentStoryRootAsync Tests
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetCurrentStoryRootAsync_ReturnsCurrentVersion()
     {
         // Arrange
@@ -72,6 +73,7 @@ public class StoryRootServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetCurrentStoryRootAsync_NoCurrentVersion_ReturnsNull()
     {
         // Arrange
@@ -91,6 +93,7 @@ public class StoryRootServiceTests
     #region GetStoryRootVersionAsync Tests
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetStoryRootVersionAsync_ValidVersionId_ReturnsVersion()
     {
         // Arrange
@@ -117,6 +120,7 @@ public class StoryRootServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetStoryRootVersionAsync_EmptyVersionId_ThrowsArgumentException()
     {
         // Act & Assert
@@ -125,6 +129,7 @@ public class StoryRootServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task GetStoryRootVersionAsync_NullVersionId_ThrowsArgumentException()
     {
         // Act & Assert
@@ -137,6 +142,7 @@ public class StoryRootServiceTests
     #region ListStoryRootVersionsAsync Tests
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ListStoryRootVersionsAsync_ReturnsVersionList()
     {
         // Arrange
@@ -164,6 +170,7 @@ public class StoryRootServiceTests
     #region ProposeStoryRootMergeAsync Tests - LLM Response Parsing (Mandatory Coverage)
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeStoryRootMergeAsync_ValidLLMResponse_ParsesSuccessfully()
     {
         // Arrange
@@ -183,6 +190,7 @@ public class StoryRootServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeStoryRootMergeAsync_WithCurrentStoryRoot_IncludesInPrompt()
     {
         // Arrange
@@ -211,6 +219,7 @@ public class StoryRootServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeStoryRootMergeAsync_NoCurrentStoryRoot_UsesNullInPrompt()
     {
         // Arrange
@@ -232,6 +241,7 @@ public class StoryRootServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeStoryRootMergeAsync_MalformedJson_ThrowsInvalidOperationException()
     {
         // Arrange
@@ -247,6 +257,7 @@ public class StoryRootServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeStoryRootMergeAsync_EmptyResponse_ThrowsInvalidOperationException()
     {
         // Arrange
@@ -262,6 +273,7 @@ public class StoryRootServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeStoryRootMergeAsync_NullResponse_ThrowsInvalidOperationException()
     {
         // Arrange
@@ -277,7 +289,8 @@ public class StoryRootServiceTests
     }
 
     [Fact]
-    public async Task ProposeStoryRootMergeAsync_DeserializesToNull_ThrowsInvalidOperationException()
+    [Trait("Category", "FastLocal")]
+    public async Task ProposeStoryRootMergeAsync_EmptyJsonObject_FailsValidation()
     {
         // Arrange
         var rawInput = "Some input";
@@ -286,12 +299,15 @@ public class StoryRootServiceTests
             .ReturnsAsync("{}");
 
         // Act & Assert
+        // Empty JSON object deserializes to object with default values, which fails validation
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _service.ProposeStoryRootMergeAsync(rawInput));
-        Assert.Contains("deserialized to null", ex.Message);
+        Assert.Contains("Proposal validation failed", ex.Message);
+        Assert.Contains("StoryRootId is required", ex.Message);
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeStoryRootMergeAsync_LLMServiceThrows_PropagatesException()
     {
         // Arrange
@@ -311,6 +327,7 @@ public class StoryRootServiceTests
     #region ProposeStoryRootMergeAsync Tests - Schema Validation (Mandatory Coverage)
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeStoryRootMergeAsync_MissingRequiredField_ThrowsInvalidOperationException()
     {
         // Arrange
@@ -327,6 +344,7 @@ public class StoryRootServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeStoryRootMergeAsync_ExtraFields_StillValidates()
     {
         // Arrange
@@ -344,6 +362,7 @@ public class StoryRootServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeStoryRootMergeAsync_EmptyInput_ThrowsArgumentException()
     {
         // Act & Assert
@@ -352,6 +371,7 @@ public class StoryRootServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeStoryRootMergeAsync_NullInput_ThrowsArgumentException()
     {
         // Act & Assert
@@ -364,6 +384,7 @@ public class StoryRootServiceTests
     #region CommitStoryRootVersionAsync Tests - Persistence and Provenance (Mandatory Coverage)
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task CommitStoryRootVersionAsync_ValidProposal_CreatesVersionWithProvenance()
     {
         // Arrange
@@ -403,6 +424,7 @@ public class StoryRootServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task CommitStoryRootVersionAsync_NoPriorVersion_SetsPriorVersionIdToNull()
     {
         // Arrange
@@ -440,6 +462,7 @@ public class StoryRootServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task CommitStoryRootVersionAsync_InvalidProposal_ThrowsArgumentException()
     {
         // Arrange
@@ -462,6 +485,7 @@ public class StoryRootServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task CommitStoryRootVersionAsync_NullProposal_ThrowsArgumentNullException()
     {
         // Act & Assert
@@ -470,6 +494,7 @@ public class StoryRootServiceTests
     }
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task CommitStoryRootVersionAsync_SetsLlmAssistedFlagToTrue()
     {
         // Arrange
@@ -510,6 +535,7 @@ public class StoryRootServiceTests
     #region Error Handling and Fallback Tests (Mandatory Coverage)
 
     [Fact]
+    [Trait("Category", "FastLocal")]
     public async Task ProposeStoryRootMergeAsync_InvalidJsonStructure_ThrowsWithContext()
     {
         // Arrange
