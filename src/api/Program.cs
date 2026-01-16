@@ -2,6 +2,7 @@ using Azure.Identity;
 using Azure.Storage.Blobs;
 using Microsoft.Azure.Cosmos;
 using SimpleTodo.Api;
+using SimpleTodo.Api.Middleware;
 using SimpleTodo.Api.Repositories;
 using SimpleTodo.Api.Services;
 using SimpleTodo.Api.Validation;
@@ -43,6 +44,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
+// Correlation ID middleware must be first in the pipeline
+app.UseMiddleware<CorrelationIdMiddleware>();
+
 app.UseCors(policy =>
 {
     policy.AllowAnyOrigin();
@@ -64,4 +68,16 @@ app.UseStaticFiles(new StaticFileOptions{
 app.MapGroup("/lists")
     .MapTodoApi()
     .WithOpenApi();
+
+app.MapGroup("/api/story-root")
+    .MapStoryRootApi()
+    .WithOpenApi();
+
+app.MapGroup("/api/world-state")
+    .MapWorldStateApi()
+    .WithOpenApi();
+
 app.Run();
+
+// Make Program visible to test assembly for WebApplicationFactory
+public partial class Program { }
