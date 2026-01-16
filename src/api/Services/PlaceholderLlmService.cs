@@ -6,5 +6,13 @@ namespace SimpleTodo.Api.Services;
 /// </summary>
 public class PlaceholderLlmService : ILlmService
 {
-    // Implementation will be added in future work orders when LLM integration is implemented
+    public Task<string> ProposeStoryRootMergeAsync(string rawInput, string promptVersion)
+    {
+        throw new NotImplementedException("LLM integration will be implemented in a future work order. Use MockLlmService for testing.");
+    }
+
+    public Task<string> ProposeWorldStateMergeAsync(string rawInput, string promptVersion)
+    {
+        throw new NotImplementedException("LLM integration will be implemented in a future work order. Use MockLlmService for testing.");
+    }
 }

@@ -10,6 +10,7 @@ namespace Todo.Api.Tests.Mocks;
 public class MockLlmService : ILlmService
 {
     private readonly Dictionary<string, string> _responseMap = new();
+    private readonly Dictionary<string, Func<string, string, string>> _responseFactoryMap = new();
 
     /// <summary>
     /// Initializes a new instance with default fixture mappings.
@@ -32,6 +33,17 @@ public class MockLlmService : ILlmService
     }
 
     /// <summary>
+    /// Sets a response factory function for a specific scenario key.
+    /// The factory receives (rawInput, promptVersion) and returns the response string.
+    /// </summary>
+    /// <param name="scenarioKey">Key identifying the scenario</param>
+    /// <param name="factory">Function that generates the response based on input and version</param>
+    public void SetResponseFactory(string scenarioKey, Func<string, string, string> factory)
+    {
+        _responseFactoryMap[scenarioKey] = factory;
+    }
+
+    /// <summary>
     /// Gets the configured response for a scenario, or null if not configured.
     /// </summary>
     /// <param name="scenarioKey">Key identifying the scenario</param>
@@ -47,6 +59,7 @@ public class MockLlmService : ILlmService
     public void ResetToDefaults()
     {
         _responseMap.Clear();
+        _responseFactoryMap.Clear();
         SetResponse("story_root", LlmResponseFixtures.ValidStoryRoot);
         SetResponse("world_state", LlmResponseFixtures.ValidWorldState);
     }
@@ -57,6 +70,7 @@ public class MockLlmService : ILlmService
     public void Clear()
     {
         _responseMap.Clear();
+        _responseFactoryMap.Clear();
     }
 
     /// <summary>
@@ -66,6 +80,38 @@ public class MockLlmService : ILlmService
     /// <returns>True if a response is configured, false otherwise</returns>
     public bool HasResponse(string scenarioKey)
     {
-        return _responseMap.ContainsKey(scenarioKey);
+        return _responseMap.ContainsKey(scenarioKey) || _responseFactoryMap.ContainsKey(scenarioKey);
+    }
+
+    public Task<string> ProposeStoryRootMergeAsync(string rawInput, string promptVersion)
+    {
+        // Check for factory first (allows dynamic responses based on input)
+        if (_responseFactoryMap.TryGetValue("story_root", out var factory))
+        {
+            return Task.FromResult(factory(rawInput, promptVersion));
+        }
+
+        // Fall back to static response
+        var response = _responseMap.TryGetValue("story_root", out var staticResponse)
+            ? staticResponse
+            : LlmResponseFixtures.ValidStoryRoot;
+
+        return Task.FromResult(response);
+    }
+
+    public Task<string> ProposeWorldStateMergeAsync(string rawInput, string promptVersion)
+    {
+        // Check for factory first (allows dynamic responses based on input)
+        if (_responseFactoryMap.TryGetValue("world_state", out var factory))
+        {
+            return Task.FromResult(factory(rawInput, promptVersion));
+        }
+
+        // Fall back to static response
+        var response = _responseMap.TryGetValue("world_state", out var staticResponse)
+            ? staticResponse
+            : LlmResponseFixtures.ValidWorldState;
+
+        return Task.FromResult(response);
     }
 }

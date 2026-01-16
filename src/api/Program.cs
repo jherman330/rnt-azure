@@ -4,6 +4,7 @@ using Microsoft.Azure.Cosmos;
 using SimpleTodo.Api;
 using SimpleTodo.Api.Repositories;
 using SimpleTodo.Api.Services;
+using SimpleTodo.Api.Validation;
 
 var credential = new DefaultAzureCredential();
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +21,11 @@ builder.Services.AddSingleton(_ => new CosmosClient(builder.Configuration["AZURE
 // Register narrative artifact services
 builder.Services.AddSingleton<IUserContextService, UserContextService>();
 builder.Services.AddSingleton<ILlmService, PlaceholderLlmService>();
+builder.Services.AddSingleton<IPromptTemplateService, PromptTemplateService>();
+builder.Services.AddSingleton<StoryRootValidator>();
+builder.Services.AddSingleton<WorldStateValidator>();
+builder.Services.AddSingleton<IStoryRootService, StoryRootService>();
+builder.Services.AddSingleton<IWorldStateService, WorldStateService>();
 
 // Blob Storage client registration (optional - only when endpoint is provided)
 var blobStorageEndpoint = builder.Configuration["AZURE_BLOB_STORAGE_ENDPOINT"];
