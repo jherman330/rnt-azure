@@ -1,9 +1,9 @@
-import { FC, ReactElement } from 'react';
+import { ComponentType, ReactElement } from 'react';
 import { StoryRootProvider } from '../components/storyRootContext';
 import StoryRootEditorContainer from '../components/StoryRoot/StoryRootEditorContainer';
 import WithApplicationInsights from '../components/telemetryWithAppInsights';
 
-const StoryRootPage: FC = (): ReactElement => {
+const StoryRootPage: ComponentType<unknown> = (): ReactElement => {
     return (
         <StoryRootProvider>
             <StoryRootEditorContainer />

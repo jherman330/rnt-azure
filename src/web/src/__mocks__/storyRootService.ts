@@ -37,7 +37,7 @@ export class MockStoryRootService {
         return this.mockVersions;
     }
 
-    async proposeStoryRootMerge(rawInput: string): Promise<ProposalResponse<StoryRoot>> {
+    async proposeStoryRootMerge(_rawInput: string): Promise<ProposalResponse<StoryRoot>> {
         return {
             proposal: {
                 story_root_id: 'proposal-id',
