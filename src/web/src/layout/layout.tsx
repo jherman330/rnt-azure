@@ -1,84 +1,64 @@
-import { FC, ReactElement, useContext, useEffect, useMemo } from 'react';
-import Header from './header';
-import Sidebar from './sidebar';
-import { Routes, Route, useNavigate } from 'react-router-dom';
-import HomePage from '../pages/homePage';
-import StoryRootPage from '../pages/storyRootPage';
+import { FC, ReactElement, useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { Stack } from '@fluentui/react';
-import { AppContext } from '../models/applicationState';
-import { TodoContext } from '../components/todoContext';
-import * as itemActions from '../actions/itemActions';
-import * as listActions from '../actions/listActions';
-import { ListActions } from '../actions/listActions';
-import { ItemActions } from '../actions/itemActions';
-import { TodoItem, TodoList } from '../models';
-import { headerStackStyles, mainStackStyles, rootStackStyles, sidebarStackStyles } from '../ux/styles';
-import TodoItemDetailPane from '../components/todoItemDetailPane';
-import { bindActionCreators } from '../actions/actionCreators';
+import Header from './header';
+import LeftPanel from './LeftPanel';
+import CenterWorkspace from './CenterWorkspace';
+import RightPanel from './RightPanel';
+import { rootStackStyles, headerStackStyles, sidebarStackStyles, mainStackStyles } from '../ux/styles';
+import WorkspaceHomePage from '../pages/WorkspaceHomePage';
+import StoryRootPage from '../pages/storyRootPage';
+import WorldStatePage from '../pages/worldStatePage';
+import { NavigationProvider, useNavigation } from '../contexts/NavigationContext';
+import { WorkspaceType } from '../types/navigation';
 
-const Layout: FC = (): ReactElement => {
-    const navigate = useNavigate();
-    const appContext = useContext<AppContext>(TodoContext)
-    const actions = useMemo(() => ({
-        lists: bindActionCreators(listActions, appContext.dispatch) as unknown as ListActions,
-        items: bindActionCreators(itemActions, appContext.dispatch) as unknown as ItemActions,
-    }), [appContext.dispatch]);
+const LayoutContent: FC = (): ReactElement => {
+    const location = useLocation();
+    const { setActiveWorkspace } = useNavigation();
 
-    // Load initial lists
+    // Update active workspace based on route
     useEffect(() => {
-        if (!appContext.state.lists) {
-            actions.lists.list();
+        if (location.pathname === '/') {
+            setActiveWorkspace('home');
+        } else if (location.pathname === '/story-root') {
+            setActiveWorkspace('story-root');
+        } else if (location.pathname === '/world-state') {
+            setActiveWorkspace('world-state');
         }
-    }, [actions.lists, appContext.state.lists]);
-
-    const onListCreated = async (list: TodoList) => {
-        const newList = await actions.lists.save(list);
-        navigate(`/lists/${newList.id}`);
-    }
-
-    const onItemEdited = (item: TodoItem) => {
-        actions.items.save(item.listId, item);
-        actions.items.select(undefined);
-        navigate(`/lists/${item.listId}`);
-    }
-
-    const onItemEditCancel = () => {
-        if (appContext.state.selectedList) {
-            actions.items.select(undefined);
-            navigate(`/lists/${appContext.state.selectedList.id}`);
-        }
-    }
+    }, [location.pathname, setActiveWorkspace]);
 
     return (
         <Stack styles={rootStackStyles}>
             <Stack.Item styles={headerStackStyles}>
-                <Header></Header>
+                <Header />
             </Stack.Item>
             <Stack horizontal grow={1}>
                 <Stack.Item styles={sidebarStackStyles}>
-                    <Sidebar
-                        selectedList={appContext.state.selectedList}
-                        lists={appContext.state.lists}
-                        onListCreate={onListCreated} />
+                    <LeftPanel />
                 </Stack.Item>
                 <Stack.Item grow={1} styles={mainStackStyles}>
-                    <Routes>
-                        <Route path="/story-root" element={<StoryRootPage />} />
-                        <Route path="/lists/:listId/items/:itemId" element={<HomePage />} />
-                        <Route path="/lists/:listId" element={<HomePage />} />
-                        <Route path="/lists" element={<HomePage />} />
-                        <Route path="/" element={<HomePage />} />
-                    </Routes>
+                    <CenterWorkspace>
+                        <Routes>
+                            <Route path="/" element={<WorkspaceHomePage />} />
+                            <Route path="/story-root" element={<StoryRootPage />} />
+                            <Route path="/world-state" element={<WorldStatePage />} />
+                        </Routes>
+                    </CenterWorkspace>
                 </Stack.Item>
                 <Stack.Item styles={sidebarStackStyles}>
-                    <TodoItemDetailPane
-                        item={appContext.state.selectedItem}
-                        onEdit={onItemEdited}
-                        onCancel={onItemEditCancel} />
+                    <RightPanel />
                 </Stack.Item>
             </Stack>
         </Stack>
     );
-}
+};
+
+const Layout: FC = (): ReactElement => {
+    return (
+        <NavigationProvider>
+            <LayoutContent />
+        </NavigationProvider>
+    );
+};
 
 export default Layout;
