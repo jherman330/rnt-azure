@@ -17,22 +17,19 @@ builder.Services.AddSingleton(_ => new CosmosClient(builder.Configuration["AZURE
     }
 }));
 
-// Blob Storage client registration
+// Register narrative artifact services
+builder.Services.AddSingleton<IUserContextService, UserContextService>();
+builder.Services.AddSingleton<ILlmService, PlaceholderLlmService>();
+
+// Blob Storage client registration (optional - only when endpoint is provided)
 var blobStorageEndpoint = builder.Configuration["AZURE_BLOB_STORAGE_ENDPOINT"];
 if (!string.IsNullOrEmpty(blobStorageEndpoint))
 {
     builder.Services.AddSingleton(_ => new BlobServiceClient(new Uri(blobStorageEndpoint), credential));
+    builder.Services.AddSingleton<IBlobArtifactRepository, BlobArtifactRepository>();
+    builder.Services.AddSingleton<IStoryRootRepository, StoryRootRepository>();
+    builder.Services.AddSingleton<IWorldStateRepository, WorldStateRepository>();
 }
-else
-{
-    throw new InvalidOperationException("AZURE_BLOB_STORAGE_ENDPOINT configuration is required");
-}
-
-// Register narrative artifact services
-builder.Services.AddSingleton<IUserContextService, UserContextService>();
-builder.Services.AddSingleton<IBlobArtifactRepository, BlobArtifactRepository>();
-builder.Services.AddSingleton<IStoryRootRepository, StoryRootRepository>();
-builder.Services.AddSingleton<IWorldStateRepository, WorldStateRepository>();
 
 builder.Services.AddCors();
 builder.Services.AddApplicationInsightsTelemetry(builder.Configuration);
