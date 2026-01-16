@@ -23,6 +23,7 @@ param logAnalyticsName string = ''
 param resourceGroupName string = ''
 param webServiceName string = ''
 param apimServiceName string = ''
+param storageAccountName string = ''
 
 @description('Flag to use Azure API Management to mediate the calls between the Web frontend and the backend API')
 param useAPIM bool = false
@@ -76,6 +77,8 @@ module api './app/api-appservice-avm.bicep' = {
       AZURE_KEY_VAULT_ENDPOINT: keyVault.outputs.uri
       AZURE_COSMOS_DATABASE_NAME: cosmos.outputs.databaseName
       AZURE_COSMOS_ENDPOINT: cosmos.outputs.endpoint
+      AZURE_BLOB_STORAGE_ENDPOINT: storage.outputs.endpoint
+      AZURE_BLOB_STORAGE_CONTAINER_NAME: storage.outputs.containerName
       API_ALLOW_ORIGINS: web.outputs.SERVICE_WEB_URI
       SCM_DO_BUILD_DURING_DEPLOYMENT: false
     }
@@ -131,6 +134,31 @@ module apiCosmosRoleAssignment './app/cosmos-role-assignment.bicep' = {
   scope: rg
   params: {
     cosmosAccountName: cosmos.outputs.accountName
+    apiPrincipalId: api.outputs.SERVICE_API_IDENTITY_PRINCIPAL_ID
+  }
+}
+
+// The storage account for narrative artifacts
+module storage './app/storage-avm.bicep' = {
+  name: 'storage'
+  scope: rg
+  params: {
+    accountName: !empty(storageAccountName) ? storageAccountName : '${abbrs.storageStorageAccounts}${resourceToken}'
+    location: location
+    tags: tags
+    containerName: 'narrative-artifacts'
+  }
+}
+
+// Give the API access to Storage using a separate role assignment
+// Note: The module is scoped to the resource group.
+// The role assignment itself is scoped to the storage account
+// via a parent storageAccount resource inside the module.
+module apiStorageRoleAssignment './app/storage-role-assignment.bicep' = {
+  name: 'api-storage-role'
+  scope: rg
+  params: {
+    storageAccountResourceId: storage.outputs.resourceId
     apiPrincipalId: api.outputs.SERVICE_API_IDENTITY_PRINCIPAL_ID
   }
 }
@@ -231,6 +259,8 @@ module apimApi 'br/public:avm/ptn/azd/apim-api:0.1.0' = if (useAPIM) {
 // Data outputs
 output AZURE_COSMOS_ENDPOINT string = cosmos.outputs.endpoint
 output AZURE_COSMOS_DATABASE_NAME string = cosmos.outputs.databaseName
+output AZURE_BLOB_STORAGE_ENDPOINT string = storage.outputs.endpoint
+output AZURE_BLOB_STORAGE_CONTAINER_NAME string = storage.outputs.containerName
 
 // App outputs
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.applicationInsightsConnectionString
