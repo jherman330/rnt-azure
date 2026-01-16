@@ -4,13 +4,9 @@
 
 ### GitHub Actions Pipeline (`.github/workflows/azure-dev.yml`)
 
-**Added test execution steps after Build step:**
+**Added test execution step after Build step:**
 
 1. **Run C# Tests** - Executes all C# unit tests using `dotnet test --no-build`
-2. **Setup Node.js** - Installs Node.js 18 for Playwright
-3. **Install Playwright dependencies** - Runs `npm ci` in tests directory
-4. **Install Playwright browsers** - Installs browser binaries with dependencies
-5. **Run Playwright E2E Tests** - Executes all Playwright tests (including @FullCI)
 
 **Location**: Steps added after line 46 (Build step), before Azure provisioning steps
 
@@ -22,10 +18,6 @@
 2. **Restore dependencies** - Restores NuGet packages for all projects
 3. **Build** - Builds all projects with `--no-restore`
 4. **Run C# Tests** - Executes all C# tests using DotNetCoreCLI@2 task with `--no-build`
-5. **Setup Node.js** - Installs Node.js 18.x using NodeTool@0
-6. **Install Playwright dependencies** - Runs `npm ci` in tests directory
-7. **Install Playwright browsers** - Installs browser binaries
-8. **Run Playwright E2E Tests** - Executes all Playwright tests
 
 **Location**: Steps added after line 30 (Configure AZD step), before Azure provisioning
 
@@ -51,7 +43,6 @@ dotnet test --filter "Category=FastLocal" --no-build
 
 ### CI/CD (All Tests)
 - **55 C# unit tests** (all categories)
-- **1 Playwright E2E test** (tagged @FullCI)
 - Runs on every push to main/master
 - Fails pipeline if any test fails
 

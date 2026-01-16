@@ -15,13 +15,12 @@ This document describes the two-tier test execution strategy for this repository
   - No network calls
 
 ### FullCI
-- **Purpose**: All tests including slower integration/E2E tests
+- **Purpose**: Reserved for future integration/E2E tests
 - **Characteristics**:
   - Integration tests
   - End-to-end tests
   - Tests requiring external dependencies
   - Tests that may be slower
-  - Browser-based tests (Playwright)
 
 ## Test Breakdown
 
@@ -40,13 +39,8 @@ All C# unit tests using xUnit with `[Trait("Category", "FastLocal")]`:
   - All unit tests for World State service operations
   - All dependencies mocked (repository, LLM service, etc.)
 
-### FullCI Tests (1 total)
-Playwright E2E test with tag `@FullCI`:
-
-- **todo.spec.ts**: 1 test
-  - End-to-end browser test
-  - Requires running application
-  - Requires browser automation
+### FullCI Tests (0 total)
+No FullCI tests currently defined. This category is reserved for future integration/E2E tests.
 
 ## Running Tests
 
@@ -62,10 +56,6 @@ dotnet test --filter "Category=FastLocal"
 # C# tests
 cd tests/Todo.Api.Tests
 dotnet test
-
-# Playwright tests
-cd tests
-npx playwright test
 ```
 
 ## Verification
@@ -84,6 +74,6 @@ dotnet test --list-tests | findstr /C:"test"
 ## Notes
 
 - All 55 C# unit tests are categorized as FastLocal
-- The 1 Playwright E2E test is categorized as FullCI
+- No FullCI tests are currently defined
 - No tests are uncategorized
-- Test categorization is enforced via xUnit traits and Playwright tags
+- Test categorization is enforced via xUnit traits

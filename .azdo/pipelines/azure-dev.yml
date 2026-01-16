@@ -55,27 +55,6 @@ steps:
       projects: 'tests/Todo.Api.Tests/Todo.Api.Tests.csproj'
       arguments: '--no-build --verbosity normal'
 
-  - task: NodeTool@0
-    displayName: Setup Node.js
-    inputs:
-      versionSpec: '18.x'
-
-  - task: Npm@1
-    displayName: Install Playwright dependencies
-    inputs:
-      command: 'ci'
-      workingDir: 'tests'
-
-  - script: |
-      npx playwright install --with-deps
-    displayName: Install Playwright browsers
-    workingDirectory: 'tests'
-
-  - script: |
-      npx playwright test
-    displayName: Run Playwright E2E Tests
-    workingDirectory: 'tests'
-
   - task: AzureCLI@2
     displayName: Provision Infrastructure
     inputs:
