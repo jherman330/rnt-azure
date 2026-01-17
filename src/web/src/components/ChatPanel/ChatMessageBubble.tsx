@@ -27,7 +27,7 @@ const ChatMessageBubble: FC<ChatMessageBubbleProps> = ({ message }): ReactElemen
     const isSystem = message.role === 'system';
     const isError = message.error !== undefined;
 
-    const bubbleStyles: React.CSSProperties = {
+    const bubbleStyles = {
         padding: '12px 16px',
         borderRadius: '8px',
         maxWidth: '85%',

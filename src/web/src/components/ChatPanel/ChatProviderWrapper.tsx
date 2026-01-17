@@ -1,6 +1,6 @@
 import { FC, ReactElement, useContext, ReactNode } from 'react';
 import { ChatProvider } from './ChatContext';
-import { StoryRootContext } from '../components/storyRootContext';
+import { StoryRootContext } from '../storyRootContext';
 import { ChatService } from '../../services/chatService';
 
 export interface ChatProviderWrapperProps {
