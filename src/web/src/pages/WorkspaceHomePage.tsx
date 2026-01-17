@@ -1,4 +1,4 @@
-import { FC, ReactElement } from 'react';
+import { ComponentType, ReactElement } from 'react';
 import { Stack, Text, PrimaryButton, IStackStyles, getTheme } from '@fluentui/react';
 import { useNavigate } from 'react-router-dom';
 import { useNavigation } from '../contexts/NavigationContext';
@@ -18,7 +18,7 @@ const cardStyles: IStackStyles = {
     }
 };
 
-const WorkspaceHomePage: FC = (): ReactElement => {
+const WorkspaceHomePage: ComponentType<unknown> = (): ReactElement => {
     const navigate = useNavigate();
     const { setActiveWorkspace } = useNavigation();
 

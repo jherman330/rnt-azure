@@ -10,7 +10,6 @@ import WorkspaceHomePage from '../pages/WorkspaceHomePage';
 import StoryRootPage from '../pages/storyRootPage';
 import WorldStatePage from '../pages/worldStatePage';
 import { NavigationProvider, useNavigation } from '../contexts/NavigationContext';
-import { WorkspaceType } from '../types/navigation';
 
 const LayoutContent: FC = (): ReactElement => {
     const location = useLocation();

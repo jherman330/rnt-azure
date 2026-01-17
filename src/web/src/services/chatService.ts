@@ -75,7 +75,7 @@ export class ChatService {
     /**
      * Formats the Story Root proposal as a readable chat response
      */
-    private formatProposalAsResponse(proposal: StoryRoot, userMessage: string): string {
+    private formatProposalAsResponse(proposal: StoryRoot, _userMessage: string): string {
         // Extract the key changes or provide a summary of the proposal
         const parts: string[] = [];
         
