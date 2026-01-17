@@ -1,69 +1,66 @@
-# CI/CD Test Automation Summary
+# CI Test Automation Summary
 
-## Changes Made
+## CI Scope and Purpose
 
-### GitHub Actions Pipeline (`.github/workflows/azure-dev.yml`)
+This document defines the **Continuous Integration (CI) quality gates** that run on push to `main`/`master` branches. CI is strictly limited to **code quality validation only** and does not include deployment concerns.
 
-**Added test execution step after Build step:**
+## CI Pipeline Execution
 
-1. **Run C# Tests** - Executes all C# unit tests using `dotnet test --no-build`
+### Trigger
+- Runs automatically on push to `main` or `master` branches
+- GitHub Actions: `.github/workflows/azure-dev.yml`
+- Azure DevOps: `.azdo/pipelines/azure-dev.yml`
 
-**Location**: Steps added after line 46 (Build step), before Azure provisioning steps
+### CI Steps (In Order)
+1. **Restore dependencies** - Restores NuGet packages for all C# projects
+2. **Build** - Builds all C# projects with `--no-restore`
+3. **Run C# Tests** - Executes all backend C# unit tests using `dotnet test --no-build`
 
-### Azure DevOps Pipeline (`.azdo/pipelines/azure-dev.yml`)
+### What CI Does NOT Include
+- ❌ **Azure authentication** - Out of scope for CI
+- ❌ **Azure provisioning** - Out of scope for CI
+- ❌ **Azure deployment** - Treated as separate CD concern, not part of push-based CI
+- ❌ **Playwright / E2E tests** - Not part of CI pipeline
+- ❌ **Frontend build or tests** - Backend C# tests only
 
-**Added complete test infrastructure before Azure provisioning:**
-
-1. **Setup .NET** - Installs .NET SDK 8.0.x using UseDotNet@2 task
-2. **Restore dependencies** - Restores NuGet packages for all projects
-3. **Build** - Builds all projects with `--no-restore`
-4. **Run C# Tests** - Executes all C# tests using DotNetCoreCLI@2 task with `--no-build`
-
-**Location**: Steps added after line 30 (Configure AZD step), before Azure provisioning
-
-### Pre-commit Hook Documentation
-
-**Created files:**
-- `.git/hooks/pre-commit.sample` - Pre-commit hook template that runs FastLocal tests
-- `tests/PRE_COMMIT_HOOK.md` - Setup instructions and troubleshooting guide
-
-**Hook command:**
-```bash
-cd tests/Todo.Api.Tests
-dotnet test --filter "Category=FastLocal" --no-build
-```
-
-## Test Execution Strategy
+## Test Execution Tiers
 
 ### Pre-commit (FastLocal)
 - **55 C# unit tests** with `[Trait("Category", "FastLocal")]`
+- Runs locally before commits (via `.git/hooks/pre-commit`)
 - Runs in < 1 second
 - Fully mocked, deterministic
 - Blocks commits if tests fail
 
-### CI/CD (All Tests)
+### CI (All Backend C# Tests)
 - **55 C# unit tests** (all categories)
 - Runs on every push to main/master
 - Fails pipeline if any test fails
+- **Only backend C# tests** - No frontend or E2E tests
+
+## CI/CD Separation
+
+**CI (Current Scope):**
+- Code quality validation only
+- Restore, build, and all backend C# tests
+- Runs on push to main/master
+
+**CD (Future Concern):**
+- Azure authentication, provisioning, and deployment are explicitly separated from push-based CI
+- Azure deployment will be handled as a separate Continuous Deployment pipeline
+- No Azure infrastructure steps are included in the CI pipeline
 
 ## Verification
 
-All changes are minimal and surgical:
-- ✅ No restructuring of existing pipeline logic
-- ✅ No changes to test code or traits
-- ✅ No new test categories
-- ✅ Preserved all existing build steps
-- ✅ Tests run after build, before deployment
-- ✅ Pre-commit hook is opt-in (sample file, not auto-installed)
+CI pipeline configuration:
+- ✅ Minimal CI scope: restore, build, tests only
+- ✅ No Azure authentication or deployment steps in CI
+- ✅ No Playwright/E2E tests in CI
+- ✅ All backend C# tests run (55 total)
+- ✅ Pipeline fails on test failures
 
-## Next Steps
+## Reference
 
-1. **Enable pre-commit hook** (optional, for developers):
-   ```bash
-   cp .git/hooks/pre-commit.sample .git/hooks/pre-commit
-   chmod +x .git/hooks/pre-commit
-   ```
-
-2. **Verify CI pipelines** on next push to main/master branch
-
-3. **Monitor test execution** in CI/CD runs to ensure all tests pass
+- Pre-commit hook: `.git/hooks/pre-commit` (runs FastLocal tests only)
+- Pre-commit documentation: `tests/PRE_COMMIT_HOOK.md`
+- Test categorization: `tests/TEST_CATEGORIZATION.md`
