@@ -86,7 +86,7 @@ public class StoryRootService : IStoryRootService
         string llmResponse;
         try
         {
-            llmResponse = await _llmService.ProposeStoryRootMergeAsync(prompt, "1.0");
+            llmResponse = await _llmService.InvokeAsync(prompt);
         }
         catch (Exception ex)
         {

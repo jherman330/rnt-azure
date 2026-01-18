@@ -87,7 +87,7 @@ public class WorldStateService : IWorldStateService
         string llmResponse;
         try
         {
-            llmResponse = await _llmService.ProposeWorldStateMergeAsync(prompt, "1.0");
+            llmResponse = await _llmService.InvokeAsync(prompt);
         }
         catch (Exception ex)
         {

@@ -178,7 +178,7 @@ public class WorldStateServiceTests
         // Arrange
         var rawInput = "Add more details about the physical laws";
         _llmServiceMock
-            .Setup(s => s.ProposeWorldStateMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync(LlmResponseFixtures.ValidWorldState);
 
         // Act
@@ -188,7 +188,7 @@ public class WorldStateServiceTests
         Assert.NotNull(result);
         Assert.Equal("world-67890", result.WorldStateId);
         Assert.Contains("Gravity", result.PhysicalLaws);
-        _llmServiceMock.Verify(s => s.ProposeWorldStateMergeAsync(It.IsAny<string>(), "1.0"), Times.Once);
+        _llmServiceMock.Verify(s => s.InvokeAsync(It.IsAny<string>()), Times.Once);
     }
 
     [Fact]
@@ -210,15 +210,15 @@ public class WorldStateServiceTests
 
         var rawInput = "Update the physical laws";
         _llmServiceMock
-            .Setup(s => s.ProposeWorldStateMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync(LlmResponseFixtures.ValidWorldState);
 
         // Act
         await _service.ProposeWorldStateMergeAsync(rawInput);
 
         // Assert
-        _llmServiceMock.Verify(s => s.ProposeWorldStateMergeAsync(
-            It.Is<string>(p => p.Contains("world-existing")), "1.0"), Times.Once);
+        _llmServiceMock.Verify(s => s.InvokeAsync(
+            It.Is<string>(p => p.Contains("world-existing"))), Times.Once);
     }
 
     [Fact]
@@ -232,15 +232,15 @@ public class WorldStateServiceTests
 
         var rawInput = "Create new world state";
         _llmServiceMock
-            .Setup(s => s.ProposeWorldStateMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync(LlmResponseFixtures.ValidWorldState);
 
         // Act
         await _service.ProposeWorldStateMergeAsync(rawInput);
 
         // Assert
-        _llmServiceMock.Verify(s => s.ProposeWorldStateMergeAsync(
-            It.Is<string>(p => p.Contains("null")), "1.0"), Times.Once);
+        _llmServiceMock.Verify(s => s.InvokeAsync(
+            It.Is<string>(p => p.Contains("null"))), Times.Once);
     }
 
     [Fact]
@@ -250,7 +250,7 @@ public class WorldStateServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeWorldStateMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync(LlmResponseFixtures.WorldStateMalformedJson);
 
         // Act & Assert
@@ -266,7 +266,7 @@ public class WorldStateServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeWorldStateMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync("");
 
         // Act & Assert
@@ -282,7 +282,7 @@ public class WorldStateServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeWorldStateMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync((string?)null!);
 
         // Act & Assert
@@ -298,7 +298,7 @@ public class WorldStateServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeWorldStateMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync("{}");
 
         // Act & Assert
@@ -316,7 +316,7 @@ public class WorldStateServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeWorldStateMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ThrowsAsync(new Exception("LLM service unavailable"));
 
         // Act & Assert
@@ -336,7 +336,7 @@ public class WorldStateServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeWorldStateMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync(LlmResponseFixtures.WorldStateMissingRequiredField);
 
         // Act & Assert
@@ -353,7 +353,7 @@ public class WorldStateServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeWorldStateMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync(LlmResponseFixtures.WorldStateWithExtraFields);
 
         // Act
@@ -547,7 +547,7 @@ public class WorldStateServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeWorldStateMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync(LlmResponseFixtures.ValidJsonWrongStructure);
 
         // Act & Assert

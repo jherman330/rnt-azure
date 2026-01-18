@@ -1,8 +1,10 @@
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Options;
 using SimpleTodo.Api;
 using SimpleTodo.Api.Middleware;
+using SimpleTodo.Api.Models;
 using SimpleTodo.Api.Repositories;
 using SimpleTodo.Api.Services;
 using SimpleTodo.Api.Validation;
@@ -19,9 +21,33 @@ builder.Services.AddSingleton(_ => new CosmosClient(builder.Configuration["AZURE
     }
 }));
 
+// Register HttpClient factory for LLM service
+builder.Services.AddHttpClient();
+
+// Configure LLM service settings
+builder.Services.Configure<LlmServiceConfiguration>(
+    builder.Configuration.GetSection(LlmServiceConstants.ConfigurationSection));
+
 // Register narrative artifact services
 builder.Services.AddSingleton<IUserContextService, UserContextService>();
-builder.Services.AddSingleton<ILlmService, PlaceholderLlmService>();
+
+// Register LLM service based on environment
+var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+if (environment == "Development" || environment == "Testing")
+{
+    builder.Services.AddSingleton<ILlmService, MockLlmService>();
+}
+else
+{
+    builder.Services.AddSingleton<ILlmService>(sp =>
+    {
+        var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+        var config = sp.GetRequiredService<IOptions<LlmServiceConfiguration>>().Value;
+        var logger = sp.GetRequiredService<ILogger<OpenAILlmService>>();
+        return new OpenAILlmService(httpClientFactory, Options.Create(config), logger);
+    });
+}
+
 builder.Services.AddSingleton<IPromptTemplateService, PromptTemplateService>();
 builder.Services.AddSingleton<StoryRootValidator>();
 builder.Services.AddSingleton<WorldStateValidator>();

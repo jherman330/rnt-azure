@@ -176,7 +176,7 @@ public class StoryRootServiceTests
         // Arrange
         var rawInput = "Add more details about the AI consciousness theme";
         _llmServiceMock
-            .Setup(s => s.ProposeStoryRootMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync(LlmResponseFixtures.ValidStoryRoot);
 
         // Act
@@ -186,7 +186,7 @@ public class StoryRootServiceTests
         Assert.NotNull(result);
         Assert.Equal("story-12345", result.StoryRootId);
         Assert.Equal("Science Fiction", result.Genre);
-        _llmServiceMock.Verify(s => s.ProposeStoryRootMergeAsync(It.IsAny<string>(), "1.0"), Times.Once);
+        _llmServiceMock.Verify(s => s.InvokeAsync(It.IsAny<string>()), Times.Once);
     }
 
     [Fact]
@@ -207,15 +207,15 @@ public class StoryRootServiceTests
 
         var rawInput = "Update the genre";
         _llmServiceMock
-            .Setup(s => s.ProposeStoryRootMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync(LlmResponseFixtures.ValidStoryRoot);
 
         // Act
         await _service.ProposeStoryRootMergeAsync(rawInput);
 
         // Assert
-        _llmServiceMock.Verify(s => s.ProposeStoryRootMergeAsync(
-            It.Is<string>(p => p.Contains("story-existing")), "1.0"), Times.Once);
+        _llmServiceMock.Verify(s => s.InvokeAsync(
+            It.Is<string>(p => p.Contains("story-existing"))), Times.Once);
     }
 
     [Fact]
@@ -229,15 +229,15 @@ public class StoryRootServiceTests
 
         var rawInput = "Create new story root";
         _llmServiceMock
-            .Setup(s => s.ProposeStoryRootMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync(LlmResponseFixtures.ValidStoryRoot);
 
         // Act
         await _service.ProposeStoryRootMergeAsync(rawInput);
 
         // Assert
-        _llmServiceMock.Verify(s => s.ProposeStoryRootMergeAsync(
-            It.Is<string>(p => p.Contains("null")), "1.0"), Times.Once);
+        _llmServiceMock.Verify(s => s.InvokeAsync(
+            It.Is<string>(p => p.Contains("null"))), Times.Once);
     }
 
     [Fact]
@@ -247,7 +247,7 @@ public class StoryRootServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeStoryRootMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync(LlmResponseFixtures.StoryRootMalformedJson);
 
         // Act & Assert
@@ -263,7 +263,7 @@ public class StoryRootServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeStoryRootMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync("");
 
         // Act & Assert
@@ -279,7 +279,7 @@ public class StoryRootServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeStoryRootMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync((string?)null!);
 
         // Act & Assert
@@ -295,7 +295,7 @@ public class StoryRootServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeStoryRootMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync("{}");
 
         // Act & Assert
@@ -313,7 +313,7 @@ public class StoryRootServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeStoryRootMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ThrowsAsync(new Exception("LLM service unavailable"));
 
         // Act & Assert
@@ -333,7 +333,7 @@ public class StoryRootServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeStoryRootMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync(LlmResponseFixtures.StoryRootMissingRequiredField);
 
         // Act & Assert
@@ -350,7 +350,7 @@ public class StoryRootServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeStoryRootMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync(LlmResponseFixtures.StoryRootWithExtraFields);
 
         // Act
@@ -541,7 +541,7 @@ public class StoryRootServiceTests
         // Arrange
         var rawInput = "Some input";
         _llmServiceMock
-            .Setup(s => s.ProposeStoryRootMergeAsync(It.IsAny<string>(), "1.0"))
+            .Setup(s => s.InvokeAsync(It.IsAny<string>()))
             .ReturnsAsync(LlmResponseFixtures.ValidJsonWrongStructure);
 
         // Act & Assert
