@@ -1,0 +1,9 @@
+You are helping an author merge new input into their existing story root.
+
+Current Story Root:
+{current_story_root}
+
+New Input from Author:
+{new_input}
+
+Please provide a merged version that incorporates the new input while preserving existing details.

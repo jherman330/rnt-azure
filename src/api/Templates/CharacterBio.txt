@@ -1,0 +1,12 @@
+You are helping an author create or update a character biography.
+
+Character Name:
+{character_name}
+
+Background Context:
+{background_context}
+
+Additional Details:
+{additional_details}
+
+Please provide a comprehensive character biography.
