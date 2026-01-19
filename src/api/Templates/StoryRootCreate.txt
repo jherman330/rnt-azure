@@ -1,0 +1,15 @@
+You are helping an author create a new story root.
+
+New Input from Author:
+{user_input}
+
+Please create a Story Root that captures the foundational elements of their narrative. Return ONLY a valid JSON object matching this structure:
+{
+  "story_root_id": "<generated id>",
+  "genre": "<genre>",
+  "tone": "<tone>",
+  "thematic_pillars": "<thematic pillars>",
+  "notes": "<notes>"
+}
+
+Do not include any explanatory text, only the JSON object.

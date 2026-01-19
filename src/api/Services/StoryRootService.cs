@@ -38,13 +38,13 @@ public class StoryRootService : IStoryRootService
         };
     }
 
-    public async Task<StoryRoot?> GetCurrentStoryRootAsync()
+    public async Task<Models.StoryRoot?> GetCurrentStoryRootAsync()
     {
         var userId = _userContextService.GetCurrentUserId();
         return await _repository.GetCurrentVersionAsync(userId);
     }
 
-    public async Task<StoryRoot?> GetStoryRootVersionAsync(string versionId)
+    public async Task<Models.StoryRoot?> GetStoryRootVersionAsync(string versionId)
     {
         if (string.IsNullOrWhiteSpace(versionId))
         {
@@ -61,7 +61,7 @@ public class StoryRootService : IStoryRootService
         return await _repository.ListVersionsAsync(userId);
     }
 
-    public async Task<StoryRoot> ProposeStoryRootMergeAsync(string rawInput)
+    public async Task<Models.StoryRoot> ProposeStoryRootMergeAsync(string rawInput)
     {
         if (string.IsNullOrWhiteSpace(rawInput))
         {
@@ -99,11 +99,11 @@ public class StoryRootService : IStoryRootService
             throw new InvalidOperationException("LLM service returned empty response");
         }
 
-        StoryRoot? proposal;
+        Models.StoryRoot? proposal;
         try
         {
             // Try to parse the JSON response
-            proposal = JsonSerializer.Deserialize<StoryRoot>(llmResponse, _jsonOptions);
+            proposal = JsonSerializer.Deserialize<Models.StoryRoot>(llmResponse, _jsonOptions);
         }
         catch (JsonException ex)
         {
@@ -125,7 +125,7 @@ public class StoryRootService : IStoryRootService
         return proposal;
     }
 
-    public async Task<string> CommitStoryRootVersionAsync(StoryRoot proposal, string? identity = null)
+    public async Task<string> CommitStoryRootVersionAsync(Models.StoryRoot proposal, string? identity = null)
     {
         if (proposal == null)
         {

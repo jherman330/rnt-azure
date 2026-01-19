@@ -53,6 +53,9 @@ builder.Services.AddSingleton<IPromptTemplateService, PromptTemplateService>();
 // Register Prompt Factory
 builder.Services.AddPromptFactory(builder.Configuration);
 
+// Register Story Root Prompt Builder
+builder.Services.AddStoryRootPromptBuilder();
+
 builder.Services.AddSingleton<StoryRootValidator>();
 builder.Services.AddSingleton<WorldStateValidator>();
 builder.Services.AddSingleton<IStoryRootService, StoryRootService>();
