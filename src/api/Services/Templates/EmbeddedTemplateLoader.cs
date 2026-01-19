@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text;
+using System.Linq;
 
 namespace SimpleTodo.Api.Services;
 
@@ -45,8 +46,9 @@ public class EmbeddedTemplateLoader : ITemplateLoader
         }
 
         // Convert template ID to resource path
-        // e.g., "story-root-merge" -> "SimpleTodo.Api.Templates.story-root-merge.txt"
-        var resourceName = $"{_resourcePrefix}{templateId}.txt";
+        // e.g., "story-root-merge" -> "SimpleTodo.Api.Templates.StoryRootMerge.txt"
+        var resourceFileName = ConvertTemplateIdToResourceName(templateId);
+        var resourceName = $"{_resourcePrefix}{resourceFileName}.txt";
 
         // Load from embedded resources
         var template = await LoadFromEmbeddedResourceAsync(resourceName);
@@ -76,5 +78,28 @@ public class EmbeddedTemplateLoader : ITemplateLoader
 
         using var reader = new StreamReader(stream, Encoding.UTF8);
         return await reader.ReadToEndAsync();
+    }
+
+    /// <summary>
+    /// Converts a kebab-case template ID to PascalCase for embedded resource lookup.
+    /// If the template ID contains hyphens, converts kebab-case to PascalCase.
+    /// If it doesn't contain hyphens, assumes it's already PascalCase and returns it unchanged.
+    /// e.g., "story-root-create" -> "StoryRootCreate"
+    ///       "StoryRootMerge" -> "StoryRootMerge" (unchanged)
+    /// </summary>
+    /// <param name="templateId">The template ID (kebab-case or PascalCase)</param>
+    /// <returns>The template ID in PascalCase format for resource lookup</returns>
+    private static string ConvertTemplateIdToResourceName(string templateId)
+    {
+        // If no hyphens, assume already in PascalCase format (for backward compatibility with tests)
+        if (!templateId.Contains('-'))
+        {
+            return templateId;
+        }
+
+        // Split by hyphens and capitalize each part
+        var parts = templateId.Split('-', StringSplitOptions.RemoveEmptyEntries);
+        return string.Join("", parts.Select(part => 
+            char.ToUpperInvariant(part[0]) + part.Substring(1).ToLowerInvariant()));
     }
 }
