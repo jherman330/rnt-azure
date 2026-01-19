@@ -40,6 +40,8 @@ public interface IStoryRootService
     /// </summary>
     /// <param name="proposal">The Story Root proposal to commit</param>
     /// <param name="identity">Optional identity information for provenance</param>
+    /// <param name="expectedVersionId">Optional expected current version ID for optimistic concurrency control. If provided and current version differs, throws VersionConflictException.</param>
     /// <returns>The version ID of the newly created version</returns>
-    Task<string> CommitStoryRootVersionAsync(Models.StoryRoot proposal, string? identity = null);
+    /// <exception cref="VersionConflictException">Thrown when expectedVersionId is provided and does not match the current version</exception>
+    Task<string> CommitStoryRootVersionAsync(Models.StoryRoot proposal, string? identity = null, string? expectedVersionId = null);
 }

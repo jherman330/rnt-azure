@@ -189,7 +189,10 @@ public static class StoryRootEndpointsExtensions
         try
         {
             var correlationId = CorrelationIdMiddleware.GetCorrelationId(context);
-            var versionId = await storyRootService.CommitStoryRootVersionAsync(request.StoryRoot, correlationId);
+            var versionId = await storyRootService.CommitStoryRootVersionAsync(
+                request.StoryRoot, 
+                correlationId,
+                request.ExpectedVersionId);
 
             var response = new CommitResponse<StoryRoot>
             {
@@ -198,6 +201,17 @@ public static class StoryRootEndpointsExtensions
             };
 
             return TypedResults.Ok(response);
+        }
+        catch (VersionConflictException ex)
+        {
+            var correlationId = CorrelationIdMiddleware.GetCorrelationId(context);
+            return TypedResults.Json(
+                new ErrorResponse
+                {
+                    Error = $"Story Root has been updated by another user. {ex.Message}",
+                    CorrelationId = correlationId
+                },
+                statusCode: 409);
         }
         catch (Exception ex)
         {

@@ -21,4 +21,5 @@ export interface ProposeStoryRootMergeRequest {
 
 export interface CommitStoryRootRequest {
     story_root: StoryRoot;
+    expected_version_id?: string;
 }

@@ -96,20 +96,35 @@ export class StoryRootService {
 
     /**
      * POST /api/story-root/commit - Commits a Story Root proposal as a new version.
+     * @param storyRoot The Story Root to commit
+     * @param expectedVersionId Optional expected current version ID for optimistic concurrency control
      */
-    async commitStoryRootVersion(storyRoot: StoryRoot): Promise<CommitResponse<StoryRoot>> {
+    async commitStoryRootVersion(storyRoot: StoryRoot, expectedVersionId?: string): Promise<CommitResponse<StoryRoot>> {
         if (!storyRoot) {
             throw new Error('Story Root is required');
         }
 
         try {
-            const response = await this.client.post<CommitResponse<StoryRoot>>('/commit', {
+            const requestBody: { story_root: StoryRoot; expected_version_id?: string } = {
                 story_root: storyRoot,
-            });
+            };
+
+            if (expectedVersionId) {
+                requestBody.expected_version_id = expectedVersionId;
+            }
+
+            const response = await this.client.post<CommitResponse<StoryRoot>>('/commit', requestBody);
             return response.data;
         } catch (error) {
             const axiosError = error as AxiosError<ErrorResponse>;
             const correlationId = this.extractCorrelationId(axiosError);
+            
+            // Handle version conflict (409) specifically
+            if (axiosError.response?.status === 409) {
+                const errorMessage = axiosError.response?.data?.error || 'Version conflict detected. The Story Root has been updated by another user.';
+                throw new Error(correlationId ? `${errorMessage} (Correlation ID: ${correlationId})` : errorMessage);
+            }
+            
             const errorMessage = axiosError.response?.data?.error || axiosError.message || 'Failed to commit Story Root';
             throw new Error(correlationId ? `${errorMessage} (Correlation ID: ${correlationId})` : errorMessage);
         }

@@ -31,6 +31,9 @@ public class CommitStoryRootRequest
 {
     [JsonPropertyName("story_root")]
     public StoryRoot StoryRoot { get; set; } = null!;
+
+    [JsonPropertyName("expected_version_id")]
+    public string? ExpectedVersionId { get; set; }
 }
 
 /// <summary>

@@ -123,7 +123,7 @@ public class StoryRootService : IStoryRootService
         return proposal;
     }
 
-    public async Task<string> CommitStoryRootVersionAsync(Models.StoryRoot proposal, string? identity = null)
+    public async Task<string> CommitStoryRootVersionAsync(Models.StoryRoot proposal, string? identity = null, string? expectedVersionId = null)
     {
         if (proposal == null)
         {
@@ -137,13 +137,27 @@ public class StoryRootService : IStoryRootService
             throw new ArgumentException($"Proposal validation failed: {errorMessage}", nameof(proposal));
         }
 
-        // Get current version to establish prior version link
+        // Get current version to establish prior version link and check for conflicts
         // The repository returns versions ordered by timestamp descending (newest first)
         var versions = await ListStoryRootVersionsAsync();
-        var priorVersionId = versions.FirstOrDefault()?.VersionId;
+        var currentVersionId = versions.FirstOrDefault()?.VersionId;
+
+        // Version conflict detection (if expectedVersionId provided)
+        if (!string.IsNullOrWhiteSpace(expectedVersionId))
+        {
+            if (currentVersionId != expectedVersionId)
+            {
+                throw new VersionConflictException(
+                    $"Expected version {expectedVersionId}, but current version is {currentVersionId ?? "(none)"}",
+                    expectedVersionId,
+                    currentVersionId);
+            }
+        }
+
+        var priorVersionId = currentVersionId;
 
         // Generate source request ID for provenance
-        var sourceRequestId = Guid.NewGuid().ToString("N");
+        var sourceRequestId = identity ?? Guid.NewGuid().ToString("N");
 
         // Get environment (could be from configuration in future)
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
