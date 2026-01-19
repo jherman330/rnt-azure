@@ -55,7 +55,6 @@ resource container 'Microsoft.Storage/storageAccounts/blobServices/containers@20
   }
 }
 
-
 output accountName string = storageAccount.name
 output endpoint string = storageAccount.properties.primaryEndpoints.blob
 output resourceId string = storageAccount.id

@@ -59,7 +59,21 @@ module web './app/web-appservice-avm.bicep' = {
   }
 }
 
+// The storage account for narrative artifacts
+// Deployed first as it has no dependencies
+module storage './app/storage-avm.bicep' = {
+  name: 'storage'
+  scope: rg
+  params: {
+    accountName: !empty(storageAccountName) ? storageAccountName : '${abbrs.storageStorageAccounts}${resourceToken}'
+    location: location
+    tags: tags
+    containerName: 'narrative-artifacts'
+  }
+}
+
 // The application backend
+// Depends on storage for endpoint configuration
 module api './app/api-appservice-avm.bicep' = {
   name: 'api'
   scope: rg
@@ -84,6 +98,17 @@ module api './app/api-appservice-avm.bicep' = {
     }
     appInsightResourceId: monitoring.outputs.applicationInsightsResourceId
     allowedOrigins: [ web.outputs.SERVICE_WEB_URI ]
+  }
+}
+
+// Give the API access to Storage using RBAC role assignment
+// This extension module is deployed after both storage and api modules to avoid circular dependencies
+module storageRbacExtension './app/storage-rbac-extension.bicep' = {
+  name: 'api-storage-rbac'
+  scope: rg
+  params: {
+    storageAccountName: storage.outputs.accountName
+    apiPrincipalId: api.outputs.SERVICE_API_IDENTITY_PRINCIPAL_ID
   }
 }
 
@@ -137,32 +162,6 @@ module apiCosmosRoleAssignment './app/cosmos-role-assignment.bicep' = {
     apiPrincipalId: api.outputs.SERVICE_API_IDENTITY_PRINCIPAL_ID
   }
 }
-
-// The storage account for narrative artifacts
-module storage './app/storage-avm.bicep' = {
-  name: 'storage'
-  scope: rg
-  params: {
-    accountName: !empty(storageAccountName) ? storageAccountName : '${abbrs.storageStorageAccounts}${resourceToken}'
-    location: location
-    tags: tags
-    containerName: 'narrative-artifacts'
-  }
-}
-
-// Give the API access to Storage using a separate role assignment
-// Note: The module is scoped to the resource group.
-// The role assignment itself is scoped to the storage account
-// via a parent storageAccount resource inside the module.
-module apiStorageRoleAssignment './app/storage-role-assignment.bicep' = {
-  name: 'api-storage-role'
-  scope: rg
-  params: {
-    storageAccountResourceId: storage.outputs.resourceId
-    apiPrincipalId: api.outputs.SERVICE_API_IDENTITY_PRINCIPAL_ID
-  }
-}
-
 
 // Create an App Service Plan to group applications under the same payment plan and SKU
 module appServicePlan 'br/public:avm/res/web/serverfarm:0.1.1' = {
