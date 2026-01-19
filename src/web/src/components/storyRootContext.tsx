@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, ReactNode } from 'react';
 import { StoryRoot, ProposalResponse, CommitResponse, ErrorResponse } from '../models';
 import { StoryRootService } from '../services/storyRootService';
 import { requestDeduplicator } from '../utils/requestDeduplication';
@@ -37,7 +37,10 @@ export interface StoryRootProviderProps {
     service?: StoryRootService;
 }
 
-export function StoryRootProvider({ children, service = new StoryRootService() }: StoryRootProviderProps) {
+export function StoryRootProvider({ children, service }: StoryRootProviderProps) {
+    // Create service instance exactly once per component lifetime - stable across renders
+    const serviceInstance = useMemo(() => service ?? new StoryRootService(), []);
+
     const [currentStoryRoot, setCurrentStoryRoot] = useState<StoryRoot | null>(null);
     const [currentVersionId, setCurrentVersionId] = useState<string | null>(null);
     const [proposal, setProposal] = useState<StoryRoot | null>(null);
@@ -50,14 +53,14 @@ export function StoryRootProvider({ children, service = new StoryRootService() }
             setLoading(true);
             setError(null);
             try {
-                const storyRoot = await service.getCurrentStoryRoot();
+                const storyRoot = await serviceInstance.getCurrentStoryRoot();
                 // null is expected for empty/default state (backend now returns empty object instead of 404)
                 setCurrentStoryRoot(storyRoot);
                 
                 // Load current version ID from versions list (with de-duplication)
                 try {
                     const versions = await requestDeduplicator.execute('listStoryRootVersions', () => 
-                        service.listStoryRootVersions()
+                        serviceInstance.listStoryRootVersions()
                     );
                     if (versions.length > 0) {
                         setCurrentVersionId(versions[0].version_id);
@@ -95,7 +98,7 @@ export function StoryRootProvider({ children, service = new StoryRootService() }
                 setLoading(false);
             }
         });
-    }, [service]);
+    }, [serviceInstance]);
 
     const proposeMerge = useCallback(async (rawInput: string): Promise<ProposalResponse<StoryRoot>> => {
         // Use request de-duplication for propose merge
@@ -103,7 +106,7 @@ export function StoryRootProvider({ children, service = new StoryRootService() }
             setLoading(true);
             setError(null);
             try {
-                const response = await service.proposeStoryRootMerge(rawInput);
+                const response = await serviceInstance.proposeStoryRootMerge(rawInput);
                 setProposal(response.proposal);
                 if (response.current) {
                     setCurrentStoryRoot(response.current);
@@ -125,7 +128,7 @@ export function StoryRootProvider({ children, service = new StoryRootService() }
                 setLoading(false);
             }
         });
-    }, [service]);
+    }, [serviceInstance]);
 
     const commitProposal = useCallback(async (storyRoot: StoryRoot): Promise<CommitResponse<StoryRoot>> => {
         // Use request de-duplication for commit (key includes story root content hash for uniqueness)
@@ -134,7 +137,7 @@ export function StoryRootProvider({ children, service = new StoryRootService() }
             setLoading(true);
             setError(null);
             try {
-                const response = await service.commitStoryRootVersion(storyRoot, currentVersionId || undefined);
+                const response = await serviceInstance.commitStoryRootVersion(storyRoot, currentVersionId || undefined);
                 setCurrentStoryRoot(response.artifact);
                 setCurrentVersionId(response.version_id);
                 setProposal(null);
@@ -169,7 +172,7 @@ export function StoryRootProvider({ children, service = new StoryRootService() }
                 setLoading(false);
             }
         });
-    }, [service, currentVersionId, loadCurrentStoryRoot]);
+    }, [serviceInstance, currentVersionId, loadCurrentStoryRoot]);
 
     const discardProposal = useCallback(() => {
         setProposal(null);
