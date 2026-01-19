@@ -22,6 +22,7 @@ public static class StoryRootEndpointsExtensions
 
     /// <summary>
     /// GET /api/story-root - Returns the current Story Root for the authenticated user.
+    /// Returns a default empty StoryRoot object if none exists (treats missing as valid empty initial state).
     /// </summary>
     public static async Task<IResult> GetCurrentStoryRoot(
         IStoryRootService storyRootService,
@@ -31,9 +32,17 @@ public static class StoryRootEndpointsExtensions
         {
             var storyRoot = await storyRootService.GetCurrentStoryRootAsync();
 
+            // Treat missing story root as valid empty initial state (return default object, no 404)
             if (storyRoot == null)
             {
-                return TypedResults.NotFound();
+                storyRoot = new StoryRoot
+                {
+                    StoryRootId = string.Empty,
+                    Genre = string.Empty,
+                    Tone = string.Empty,
+                    ThematicPillars = string.Empty,
+                    Notes = string.Empty
+                };
             }
 
             return TypedResults.Ok(storyRoot);

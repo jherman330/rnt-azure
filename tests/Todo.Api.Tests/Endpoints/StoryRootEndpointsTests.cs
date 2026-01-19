@@ -58,7 +58,7 @@ public class StoryRootEndpointsTests : IClassFixture<TestWebApplicationFactory>
 
     [Fact]
     [Trait("Category", "FastLocal")]
-    public async Task GetCurrentStoryRoot_Returns404_WhenStoryRootDoesNotExist()
+    public async Task GetCurrentStoryRoot_Returns200_WithEmptyDefault_WhenStoryRootDoesNotExist()
     {
         // Arrange
         _factory.StoryRootRepositoryMock
@@ -69,7 +69,14 @@ public class StoryRootEndpointsTests : IClassFixture<TestWebApplicationFactory>
         var response = await _client.GetAsync("/api/story-root");
 
         // Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        // Missing story root is treated as valid empty initial state (return default object, no 404)
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var storyRoot = await response.Content.ReadFromJsonAsync<StoryRoot>();
+        Assert.NotNull(storyRoot);
+        Assert.Empty(storyRoot.StoryRootId);
+        Assert.Empty(storyRoot.Genre);
+        Assert.Empty(storyRoot.Tone);
+        Assert.Empty(storyRoot.ThematicPillars);
     }
 
     [Fact]

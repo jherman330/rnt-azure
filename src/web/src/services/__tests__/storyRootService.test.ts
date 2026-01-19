@@ -39,12 +39,20 @@ describe('StoryRootService', () => {
             expect(result).toEqual(mockStoryRoot);
         });
 
-        it('should return null when Story Root does not exist (404)', async () => {
-            mockAxios.onGet('/api/story-root').reply(404);
+        it('should return null when Story Root does not exist (empty default object)', async () => {
+            // Backend now returns 200 with empty default object instead of 404
+            const emptyStoryRoot: StoryRoot = {
+                story_root_id: '',
+                genre: '',
+                tone: '',
+                thematic_pillars: '',
+                notes: '',
+            };
+            mockAxios.onGet('/api/story-root').reply(200, emptyStoryRoot);
 
             const result = await service.getCurrentStoryRoot();
 
-            expect(result).toBeNull();
+            expect(result).toBeNull(); // Empty object is treated as null
         });
 
         it('should throw error with correlation ID when request fails with non-404 error', async () => {
