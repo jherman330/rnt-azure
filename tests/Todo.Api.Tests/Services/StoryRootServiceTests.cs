@@ -18,7 +18,8 @@ public class StoryRootServiceTests
 {
     private readonly Mock<IStoryRootRepository> _repositoryMock;
     private readonly Mock<ILlmService> _llmServiceMock;
-    private readonly Mock<IPromptTemplateService> _promptTemplateServiceMock;
+    private readonly Mock<IStoryRootPromptBuilder> _storyRootPromptBuilderMock;
+    private readonly Mock<IPromptFactory> _promptFactoryMock;
     private readonly Mock<IUserContextService> _userContextServiceMock;
     private readonly StoryRootValidator _validator;
     private readonly StoryRootService _service;
@@ -27,21 +28,35 @@ public class StoryRootServiceTests
     {
         _repositoryMock = new Mock<IStoryRootRepository>();
         _llmServiceMock = new Mock<ILlmService>();
-        _promptTemplateServiceMock = new Mock<IPromptTemplateService>();
+        _storyRootPromptBuilderMock = new Mock<IStoryRootPromptBuilder>();
+        _promptFactoryMock = new Mock<IPromptFactory>();
         _userContextServiceMock = TestUtilities.MockExtensions.CreateUserContextServiceMock();
         _validator = new StoryRootValidator();
 
         _service = new StoryRootService(
             _repositoryMock.Object,
             _llmServiceMock.Object,
-            _promptTemplateServiceMock.Object,
+            _storyRootPromptBuilderMock.Object,
+            _promptFactoryMock.Object,
             _userContextServiceMock.Object,
             _validator);
 
-        // Setup default prompt template
-        _promptTemplateServiceMock
-            .Setup(s => s.GetPromptTemplateAsync("story_root_merge", "1.0"))
-            .ReturnsAsync("Template with {current_story_root} and {user_input}");
+        // Setup default mocks for prompt builder and factory
+        _storyRootPromptBuilderMock
+            .Setup(b => b.PrepareStoryRootMergeAsync(It.IsAny<StoryRoot?>(), It.IsAny<string>()))
+            .ReturnsAsync(new PromptInput
+            {
+                TemplateId = "story-root-merge",
+                Variables = new Dictionary<string, string>
+                {
+                    { "current_story_root", "null" },
+                    { "user_input", string.Empty }
+                }
+            });
+
+        _promptFactoryMock
+            .Setup(f => f.AssemblePromptAsync(It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()))
+            .ReturnsAsync("Assembled prompt string");
     }
 
     #region GetCurrentStoryRootAsync Tests
@@ -213,9 +228,10 @@ public class StoryRootServiceTests
         // Act
         await _service.ProposeStoryRootMergeAsync(rawInput);
 
-        // Assert
-        _llmServiceMock.Verify(s => s.InvokeAsync(
-            It.Is<string>(p => p.Contains("story-existing"))), Times.Once);
+        // Assert - Verify StoryRootPromptBuilder was called with correct StoryRoot
+        _storyRootPromptBuilderMock.Verify(b => b.PrepareStoryRootMergeAsync(
+            It.Is<StoryRoot?>(sr => sr != null && sr.StoryRootId == "story-existing"),
+            It.Is<string>(input => input == rawInput)), Times.Once);
     }
 
     [Fact]
@@ -235,9 +251,10 @@ public class StoryRootServiceTests
         // Act
         await _service.ProposeStoryRootMergeAsync(rawInput);
 
-        // Assert
-        _llmServiceMock.Verify(s => s.InvokeAsync(
-            It.Is<string>(p => p.Contains("null"))), Times.Once);
+        // Assert - Verify StoryRootPromptBuilder was called with null StoryRoot
+        _storyRootPromptBuilderMock.Verify(b => b.PrepareStoryRootMergeAsync(
+            It.Is<StoryRoot?>(sr => sr == null),
+            It.Is<string>(input => input == rawInput)), Times.Once);
     }
 
     [Fact]

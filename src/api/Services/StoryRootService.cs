@@ -14,7 +14,8 @@ public class StoryRootService : IStoryRootService
 {
     private readonly IStoryRootRepository _repository;
     private readonly ILlmService _llmService;
-    private readonly IPromptTemplateService _promptTemplateService;
+    private readonly IStoryRootPromptBuilder _storyRootPromptBuilder;
+    private readonly IPromptFactory _promptFactory;
     private readonly IUserContextService _userContextService;
     private readonly StoryRootValidator _validator;
     private readonly JsonSerializerOptions _jsonOptions;
@@ -22,13 +23,15 @@ public class StoryRootService : IStoryRootService
     public StoryRootService(
         IStoryRootRepository repository,
         ILlmService llmService,
-        IPromptTemplateService promptTemplateService,
+        IStoryRootPromptBuilder storyRootPromptBuilder,
+        IPromptFactory promptFactory,
         IUserContextService userContextService,
         StoryRootValidator validator)
     {
         _repository = repository;
         _llmService = llmService;
-        _promptTemplateService = promptTemplateService;
+        _storyRootPromptBuilder = storyRootPromptBuilder;
+        _promptFactory = promptFactory;
         _userContextService = userContextService;
         _validator = validator;
         _jsonOptions = new JsonSerializerOptions
@@ -70,17 +73,12 @@ public class StoryRootService : IStoryRootService
 
         // Get current Story Root (if exists)
         var currentStoryRoot = await GetCurrentStoryRootAsync();
-        var currentStoryRootJson = currentStoryRoot != null
-            ? JsonSerializer.Serialize(currentStoryRoot, _jsonOptions)
-            : "null";
 
-        // Get prompt template (using version "1.0" for Phase-0)
-        var promptTemplate = await _promptTemplateService.GetPromptTemplateAsync("story_root_merge", "1.0");
+        // Prepare prompt inputs using domain logic
+        var promptInput = await _storyRootPromptBuilder.PrepareStoryRootMergeAsync(currentStoryRoot, rawInput);
 
-        // Replace template placeholders
-        var prompt = promptTemplate
-            .Replace("{current_story_root}", currentStoryRootJson)
-            .Replace("{user_input}", rawInput);
+        // Assemble prompt string using Prompt Factory
+        var prompt = await _promptFactory.AssemblePromptAsync(promptInput.TemplateId, promptInput.Variables);
 
         // Call LLM service
         string llmResponse;

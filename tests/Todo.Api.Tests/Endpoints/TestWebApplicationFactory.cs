@@ -20,6 +20,8 @@ public class TestWebApplicationFactory : WebApplicationFactory<SimpleTodo.Api.Pr
     private readonly Mock<IWorldStateRepository> _worldStateRepositoryMock;
     private readonly MockLlmService _llmServiceMock;
     private readonly Mock<IPromptTemplateService> _promptTemplateServiceMock;
+    private readonly Mock<IStoryRootPromptBuilder> _storyRootPromptBuilderMock;
+    private readonly Mock<IPromptFactory> _promptFactoryMock;
     private readonly Mock<IUserContextService> _userContextServiceMock;
 
     public TestWebApplicationFactory()
@@ -28,12 +30,31 @@ public class TestWebApplicationFactory : WebApplicationFactory<SimpleTodo.Api.Pr
         _worldStateRepositoryMock = new Mock<IWorldStateRepository>();
         _llmServiceMock = new MockLlmService();
         _promptTemplateServiceMock = new Mock<IPromptTemplateService>();
+        _storyRootPromptBuilderMock = new Mock<IStoryRootPromptBuilder>();
+        _promptFactoryMock = new Mock<IPromptFactory>();
         _userContextServiceMock = TestUtilities.MockExtensions.CreateUserContextServiceMock();
 
-        // Setup default prompt template
+        // Setup default prompt template (for WorldStateService which still uses it)
         _promptTemplateServiceMock
             .Setup(s => s.GetPromptTemplateAsync(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync("Template with {current_story_root} and {user_input}");
+
+        // Setup default mocks for StoryRootPromptBuilder and PromptFactory
+        _storyRootPromptBuilderMock
+            .Setup(b => b.PrepareStoryRootMergeAsync(It.IsAny<Models.StoryRoot?>(), It.IsAny<string>()))
+            .ReturnsAsync(new Models.PromptInput
+            {
+                TemplateId = "story-root-merge",
+                Variables = new Dictionary<string, string>
+                {
+                    { "current_story_root", "null" },
+                    { "user_input", string.Empty }
+                }
+            });
+
+        _promptFactoryMock
+            .Setup(f => f.AssemblePromptAsync(It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()))
+            .ReturnsAsync("Assembled prompt string");
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -69,6 +90,20 @@ public class TestWebApplicationFactory : WebApplicationFactory<SimpleTodo.Api.Pr
                 services.Remove(promptTemplateServiceDescriptor);
             }
 
+            var storyRootPromptBuilderDescriptor = services.SingleOrDefault(
+                d => d.ServiceType == typeof(IStoryRootPromptBuilder));
+            if (storyRootPromptBuilderDescriptor != null)
+            {
+                services.Remove(storyRootPromptBuilderDescriptor);
+            }
+
+            var promptFactoryDescriptor = services.SingleOrDefault(
+                d => d.ServiceType == typeof(IPromptFactory));
+            if (promptFactoryDescriptor != null)
+            {
+                services.Remove(promptFactoryDescriptor);
+            }
+
             var userContextServiceDescriptor = services.SingleOrDefault(
                 d => d.ServiceType == typeof(IUserContextService));
             if (userContextServiceDescriptor != null)
@@ -94,7 +129,9 @@ public class TestWebApplicationFactory : WebApplicationFactory<SimpleTodo.Api.Pr
             services.AddSingleton(_storyRootRepositoryMock.Object);
             services.AddSingleton(_worldStateRepositoryMock.Object);
             services.AddSingleton<ILlmService>(_llmServiceMock);
-            services.AddSingleton(_promptTemplateServiceMock.Object);
+            services.AddSingleton(_promptTemplateServiceMock.Object); // Still needed for WorldStateService
+            services.AddSingleton(_storyRootPromptBuilderMock.Object);
+            services.AddSingleton(_promptFactoryMock.Object);
             services.AddSingleton(_userContextServiceMock.Object);
             services.AddSingleton<StoryRootValidator>();
             services.AddSingleton<WorldStateValidator>();
