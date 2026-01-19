@@ -26,13 +26,21 @@ export class StoryRootService {
 
     /**
      * GET /api/story-root - Returns the current Story Root for the authenticated user.
+     * Returns null if no Story Root exists (404), which is expected for first-run scenarios.
      */
-    async getCurrentStoryRoot(): Promise<StoryRoot> {
+    async getCurrentStoryRoot(): Promise<StoryRoot | null> {
         try {
             const response = await this.client.get<StoryRoot>('/');
             return response.data;
         } catch (error) {
             const axiosError = error as AxiosError<ErrorResponse>;
+            
+            // 404 is expected when no Story Root exists (first-run scenario)
+            if (axiosError.response?.status === 404) {
+                return null;
+            }
+            
+            // For other errors, throw as before
             const correlationId = this.extractCorrelationId(axiosError);
             const errorMessage = axiosError.response?.data?.error || axiosError.message || 'Failed to retrieve current Story Root';
             throw new Error(correlationId ? `${errorMessage} (Correlation ID: ${correlationId})` : errorMessage);

@@ -47,6 +47,7 @@ export function StoryRootProvider({ children, service = new StoryRootService() }
         setError(null);
         try {
             const storyRoot = await service.getCurrentStoryRoot();
+            // null is expected for first-run (404 from backend)
             setCurrentStoryRoot(storyRoot);
             
             // Load current version ID from versions list
@@ -54,12 +55,16 @@ export function StoryRootProvider({ children, service = new StoryRootService() }
                 const versions = await service.listStoryRootVersions();
                 if (versions.length > 0) {
                     setCurrentVersionId(versions[0].version_id);
+                } else {
+                    setCurrentVersionId(null);
                 }
             } catch {
                 // If version list fails, continue without version ID
                 // This maintains backward compatibility
+                setCurrentVersionId(null);
             }
         } catch (err) {
+            // Only set error for non-404 errors (404 is handled as empty state)
             const errorMessage = err instanceof Error ? err.message : 'Failed to load Story Root';
             // Extract correlation ID from error message if present
             const correlationIdMatch = errorMessage.match(/Correlation ID: ([^\s)]+)/);

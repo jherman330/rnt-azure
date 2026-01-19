@@ -16,10 +16,7 @@ export class MockStoryRootService {
         this.mockVersions = versions;
     }
 
-    async getCurrentStoryRoot(): Promise<StoryRoot> {
-        if (!this.mockCurrentStoryRoot) {
-            throw new Error('No current Story Root');
-        }
+    async getCurrentStoryRoot(): Promise<StoryRoot | null> {
         return this.mockCurrentStoryRoot;
     }
 

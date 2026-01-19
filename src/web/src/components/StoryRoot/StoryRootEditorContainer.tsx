@@ -155,6 +155,19 @@ export const StoryRootEditorContainer: FC = (): ReactElement => {
                     <StoryRootDisplay storyRoot={currentStoryRoot} />
                 </Stack>
             )}
+
+            {/* Empty State - No Story Root and no proposal */}
+            {!proposal && !currentStoryRoot && !loading && (
+                <Stack tokens={{ childrenGap: 16 }} style={{ padding: '40px', textAlign: 'center' }}>
+                    <Text variant="xLarge">Welcome to Story Root</Text>
+                    <Text variant="medium" style={{ color: '#888' }}>
+                        You don't have a Story Root yet. Create your first Story Root by entering your narrative ideas below.
+                    </Text>
+                    <Text variant="small" style={{ color: '#666', marginTop: '8px' }}>
+                        A Story Root defines your story's genre, tone, and thematic pillars. This foundation guides all narrative decisions.
+                    </Text>
+                </Stack>
+            )}
         </Stack>
     );
 };

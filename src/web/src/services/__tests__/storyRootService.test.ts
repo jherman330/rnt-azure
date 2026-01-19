@@ -39,7 +39,15 @@ describe('StoryRootService', () => {
             expect(result).toEqual(mockStoryRoot);
         });
 
-        it('should throw error with correlation ID when request fails', async () => {
+        it('should return null when Story Root does not exist (404)', async () => {
+            mockAxios.onGet('/api/story-root').reply(404);
+
+            const result = await service.getCurrentStoryRoot();
+
+            expect(result).toBeNull();
+        });
+
+        it('should throw error with correlation ID when request fails with non-404 error', async () => {
             mockAxios.onGet('/api/story-root').reply(500, {
                 error: 'Server error',
                 correlation_id: 'corr-123',
